@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-burgundy: #800020;
+  --color-burgundy-light: #a04050;
+  --color-burgundy-dark: #4a0012;
+  --color-cream: #f5e6cc;
+  --color-cream-dark: #e8d5b0;
+  --color-wood: #8b5e3c;
+  --color-wood-light: #a87b5a;
+  --color-wood-dark: #5a3d26;
+  --color-gold: #c9a96e;
+  --color-gold-light: #e0c9a0;
+  --color-scout-red: #cc3333;
+  --font-cairo: "Cairo", sans-serif;
+  --font-changa: "Changa", sans-serif;
+  --font-ibm: "IBM Plex Sans Arabic", sans-serif;
+  --font-reem: "Reem Kufi", sans-serif;
+}
+
+:root {
+  --background: #f5e6cc;
+  --foreground: #2c1810;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ibm);
+  direction: rtl;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: #800020;
+    color: #f5e6cc;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f5e6cc;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #800020;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4a0012;
+  }
+}
+
+@layer utilities {
+  .vintage-texture {
+    background-image:
+      url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+
+  .vintage-border {
+    border: 2px solid #8b5e3c;
+    box-shadow:
+      inset 0 0 20px rgba(139, 94, 60, 0.1),
+      0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .vintage-shadow {
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.1),
+      0 10px 30px rgba(139, 94, 60, 0.15);
+  }
+
+  .text-gradient-burgundy {
+    background: linear-gradient(135deg, #800020, #a04050);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-vintage-pattern {
+    background-color: #f5e6cc;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(139, 94, 60, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 50%, rgba(128, 0, 32, 0.05) 0%, transparent 50%);
+  }
+
+  .scout-card {
+    background: linear-gradient(145deg, #faf3e8, #f0e0cc);
+    border: 1px solid rgba(139, 94, 60, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .scout-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(128, 0, 32, 0.15);
+    border-color: rgba(128, 0, 32, 0.3);
+  }
+
+  .dark-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.1) 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  }
+
+  .nav-scrolled {
+    backdrop-filter: blur(12px);
+    background-color: rgba(245, 230, 204, 0.9);
+    border-bottom: 1px solid rgba(139, 94, 60, 0.1);
+  }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-flicker {
+  animation: flicker 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes compass-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-compass {
+  animation: compass-spin 8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flicker,
+  .animate-float,
+  .animate-compass,
+  .scout-card {
+    animation: none;
+    transition: none;
+  }
+}
