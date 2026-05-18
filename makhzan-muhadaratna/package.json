@@ -16,13 +16,18 @@
     "react-dom": "19.2.4",
     "recharts": "^3.8.1"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@parcel/watcher", "esbuild", "netlify-cli", "unix-dgram"]
+  },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.15.11",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "netlify-cli": "^26.0.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -1,6 +1,14 @@
 allowBuilds:
-  sharp: true
-  unrs-resolver: true
-ignoredBuiltDependencies:
+  '@parcel/watcher': set this to true or false
+  esbuild: set this to true or false
+  netlify-cli: set this to true or false
+  sharp: set this to true or false
+  unix-dgram: set this to true or false
+  unrs-resolver: set this to true or false
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
+  - netlify-cli
   - sharp
+  - unix-dgram
   - unrs-resolver

@@ -1,0 +1,33 @@
+headers = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[[plugins]]
+origin = "config"
+package = "@netlify/plugin-nextjs"
+
+[plugins.inputs]
+
+[build]
+publish = "D:\\New folder\\makhzan-muhadaratna\\.next"
+publishOrigin = "config"
+commandOrigin = "config"
+base = "D:\\New folder\\makhzan-muhadaratna"
+command = "pnpm build"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
