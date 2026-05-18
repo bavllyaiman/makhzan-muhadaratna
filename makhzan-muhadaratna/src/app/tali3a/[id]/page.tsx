@@ -7,7 +7,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScoutLogo from "@/components/ScoutLogo";
-import { loadTali3atList } from "@/lib/data";
+import { fetchTali3at } from "@/lib/data";
 import { Tali3a } from "@/lib/types";
 
 export default function Tali3aPage() {
@@ -17,8 +17,9 @@ export default function Tali3aPage() {
   const lectures: any[] = [];
 
   useEffect(() => {
-    const list = loadTali3atList();
-    setTali3a(list.find((t) => t.id === id) || null);
+    fetchTali3at().then((list) => {
+      setTali3a(list.find((t) => t.id === id) || null);
+    });
   }, [id]);
 
   if (!tali3a) {

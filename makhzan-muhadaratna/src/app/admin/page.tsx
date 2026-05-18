@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import ScoutLogo from "@/components/ScoutLogo";
-import { loadTali3atList, saveTali3atList, getLogoOptions } from "@/lib/data";
+import { fetchTali3at, updateTali3a, fetchLectures, addLecture, deleteLecture, fetchVisitors, generateId, convertGoogleDriveLink } from "@/lib/data";
 import { Tali3a } from "@/lib/types";
 
 type Tab = "overview" | "lectures" | "visitors" | "add" | "tali3at";
@@ -20,16 +19,33 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [filterTali3a, setFilterTali3a] = useState("all");
 
-  const [tali3at, setTali3at] = useState<Tali3a[]>(loadTali3atList);
+  const [tali3at, setTali3at] = useState<Tali3a[]>([]);
+  const [allLectures, setAllLectures] = useState<any[]>([]);
+  const [visitors, setVisitors] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [editingTali3a, setEditingTali3a] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", description: "", logoId: "", imageUrl: "" });
   const [editMsg, setEditMsg] = useState("");
+  const [lectureForm, setLectureForm] = useState({ title: "", tali3aId: "", description: "", pdfUrl: "", pdfFile: "" });
+  const [lectureMsg, setLectureMsg] = useState("");
+  const [lectureMsgType, setLectureMsgType] = useState<"success" | "error">("success");
+  const [uploadMethod, setUploadMethod] = useState<"drive" | "file">("drive");
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const totalViews = 0;
-  const totalLectures = 0;
+  const totalViews = allLectures.reduce((s, l) => s + (l.views || 0), 0);
+  const totalLectures = allLectures.length;
   const totalTali3at = tali3at.length;
-  const lecturesByTali3a = tali3at.map((t) => ({ name: t.name, count: 0 }));
-  const filteredLectures: any[] = [];
+  const lecturesByTali3a = tali3at.map((t) => ({ name: t.name, count: allLectures.filter((l) => l.tali3aId === t.id).length }));
+  const filteredLectures = filterTali3a === "all" ? allLectures : allLectures.filter((l) => l.tali3aId === filterTali3a);
+
+  useEffect(() => {
+    Promise.all([fetchTali3at(), fetchLectures(), fetchVisitors()]).then(([t, l, v]) => {
+      setTali3at(t);
+      setAllLectures(l);
+      setVisitors(v);
+      setLoadingData(false);
+    });
+  }, [refreshKey]);
 
   const startEdit = (t: Tali3a) => {
     setEditingTali3a(t.id);
@@ -37,7 +53,7 @@ export default function AdminPage() {
     setEditMsg("");
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editForm.name.trim() || !editForm.description.trim()) {
       setEditMsg("جميع الحقول مطلوبة");
       return;
@@ -48,7 +64,9 @@ export default function AdminPage() {
         : t
     );
     setTali3at(updated);
-    saveTali3atList(updated);
+    if (editingTali3a) {
+      await updateTali3a(editingTali3a, { name: editForm.name, description: editForm.description, imageUrl: editForm.imageUrl || undefined });
+    }
     setEditingTali3a(null);
     setEditMsg("✅ تم الحفظ بنجاح");
     setTimeout(() => setEditMsg(""), 3000);
@@ -304,10 +322,21 @@ export default function AdminPage() {
                         <td className="py-3 px-4 text-wood text-sm">{lecture.views}</td>
                         <td className="py-3 px-4">
                           <div className="flex gap-2">
-                            <button className="px-3 py-1.5 bg-burgundy/10 text-burgundy rounded-lg text-xs font-cairo font-bold hover:bg-burgundy/20 transition-colors">
-                              تعديل
+                            <button
+                              onClick={() => window.open(`/muhadara/${lecture.id}`, "_blank")}
+                              className="px-3 py-1.5 bg-burgundy/10 text-burgundy rounded-lg text-xs font-cairo font-bold hover:bg-burgundy/20 transition-colors"
+                            >
+                              عرض
                             </button>
-                            <button className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-cairo font-bold hover:bg-red-100 transition-colors">
+                            <button
+                              onClick={async () => {
+                                if (confirm("هل أنت متأكد من حذف هذه المحاضرة؟")) {
+                                  await deleteLecture(lecture.id);
+                                  setAllLectures(allLectures.filter((l) => l.id !== lecture.id));
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-cairo font-bold hover:bg-red-100 transition-colors"
+                            >
                               حذف
                             </button>
                           </div>
@@ -327,18 +356,49 @@ export default function AdminPage() {
             animate={{ opacity: 1 }}
           >
             <h2 className="text-2xl font-bold font-reem text-burgundy-dark mb-6">
-              بيانات الزوار
+              قائمة الزوار
             </h2>
 
-            <div className="scout-card rounded-xl p-8 text-center">
-              <div className="text-6xl mb-4">📊</div>
-              <h3 className="text-xl font-bold font-cairo text-burgundy-dark mb-2">
-                قريباً
-              </h3>
-              <p className="text-wood">
-                سيتم عرض بيانات الزوار بعد ربط قاعدة البيانات
-              </p>
-            </div>
+            {visitors.length === 0 ? (
+              <div className="scout-card rounded-xl p-8 text-center">
+                <div className="text-6xl mb-4">📭</div>
+                <h3 className="text-xl font-bold font-cairo text-burgundy-dark mb-2">
+                  لا يوجد زوار بعد
+                </h3>
+                <p className="text-wood">
+                  سيتم عرض الزوار المسجلين هنا بعد تسجيل دخولهم لمشاهدة المحاضرات
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full bg-white rounded-xl overflow-hidden vintage-shadow">
+                  <thead>
+                    <tr className="bg-burgundy text-cream">
+                      <th className="py-3 px-4 text-right font-cairo text-sm">الاسم</th>
+                      <th className="py-3 px-4 text-right font-cairo text-sm">رقم الموبايل</th>
+                      <th className="py-3 px-4 text-right font-cairo text-sm">الطليعة</th>
+                      <th className="py-3 px-4 text-right font-cairo text-sm">تاريخ التسجيل</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visitors.map((v, i) => (
+                      <motion.tr
+                        key={v.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="border-b border-wood/10 hover:bg-wood/5 transition-colors"
+                      >
+                        <td className="py-3 px-4 font-cairo text-burgundy-dark font-semibold">{v.fullName}</td>
+                        <td className="py-3 px-4 text-wood text-sm">{v.phone}</td>
+                        <td className="py-3 px-4 text-wood text-sm">{v.tali3a}</td>
+                        <td className="py-3 px-4 text-wood text-sm">{v.createdAt}</td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -353,7 +413,34 @@ export default function AdminPage() {
 
             <div className="scout-card rounded-xl p-6 sm:p-8 max-w-2xl">
               <form
-                onSubmit={(e) => e.preventDefault()}
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!lectureForm.title.trim() || !lectureForm.tali3aId || !lectureForm.description.trim()) {
+                    setLectureMsg("يرجى ملء جميع الحقول المطلوبة");
+                    return;
+                  }
+                  if (!lectureForm.pdfUrl && !lectureForm.pdfFile) {
+                    setLectureMsg("يرجى إضافة ملف PDF أو رابط Google Drive");
+                    return;
+                  }
+                  const newLecture = {
+                    id: generateId(),
+                    tali3aId: lectureForm.tali3aId,
+                    title: lectureForm.title.trim(),
+                    description: lectureForm.description.trim(),
+                    date: new Date().toLocaleDateString("ar-EG"),
+                    pdfUrl: lectureForm.pdfUrl
+                      ? convertGoogleDriveLink(lectureForm.pdfUrl.trim())
+                      : (lectureForm.pdfFile as string),
+                    views: 0,
+                  };
+                  await addLecture(newLecture);
+                  setAllLectures([newLecture, ...allLectures]);
+                  setLectureForm({ title: "", tali3aId: "", description: "", pdfUrl: "", pdfFile: "" });
+                  setLectureMsg("✓ تم إضافة المحاضرة بنجاح");
+                  setLectureMsgType("success");
+                  setTimeout(() => setLectureMsg(""), 3000);
+                }}
                 className="space-y-5"
               >
                 <div>
@@ -362,6 +449,8 @@ export default function AdminPage() {
                   </label>
                   <input
                     type="text"
+                    value={lectureForm.title}
+                    onChange={(e) => setLectureForm({ ...lectureForm, title: e.target.value })}
                     className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 font-cairo"
                     placeholder="أدخل عنوان المحاضرة"
                   />
@@ -371,7 +460,11 @@ export default function AdminPage() {
                   <label className="block text-burgundy-dark font-cairo font-bold text-sm mb-2">
                     الطليعة
                   </label>
-                  <select className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 font-cairo">
+                  <select
+                    value={lectureForm.tali3aId}
+                    onChange={(e) => setLectureForm({ ...lectureForm, tali3aId: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 font-cairo"
+                  >
                     <option value="">اختر الطليعة</option>
                     {tali3at.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -387,6 +480,8 @@ export default function AdminPage() {
                   </label>
                   <textarea
                     rows={4}
+                    value={lectureForm.description}
+                    onChange={(e) => setLectureForm({ ...lectureForm, description: e.target.value })}
                     className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 font-cairo resize-none"
                     placeholder="وصف المحاضرة"
                   />
@@ -396,16 +491,77 @@ export default function AdminPage() {
                   <label className="block text-burgundy-dark font-cairo font-bold text-sm mb-2">
                     ملف PDF
                   </label>
-                  <div className="border-2 border-dashed border-wood/30 rounded-lg p-8 text-center hover:border-burgundy/50 transition-colors cursor-pointer">
-                    <div className="text-4xl mb-3">📄</div>
-                    <p className="text-wood font-cairo text-sm">
-                      اسحب ملف PDF هنا أو اضغط للاختيار
-                    </p>
-                    <p className="text-wood/50 text-xs mt-1 font-cairo">
-                      يدعم ملفات PDF فقط
-                    </p>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-white border border-wood/20 rounded-lg">
+                      <input
+                        type="radio"
+                        id="method-drive"
+                        name="uploadMethod"
+                        checked={uploadMethod === "drive"}
+                        onChange={() => setUploadMethod("drive")}
+                        className="accent-burgundy"
+                      />
+                      <label htmlFor="method-drive" className="font-cairo text-burgundy-dark font-bold text-sm cursor-pointer flex-1">
+                        Google Drive
+                      </label>
+                    </div>
+                    {uploadMethod === "drive" && (
+                      <input
+                        type="url"
+                        value={lectureForm.pdfUrl}
+                        onChange={(e) => { setLectureForm({ ...lectureForm, pdfUrl: e.target.value, pdfFile: "" }); setUploadMethod("drive"); }}
+                        className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 font-cairo text-sm"
+                        placeholder="رابط المشاركة من Google Drive (https://drive.google.com/file/d/...)"
+                      />
+                    )}
+
+                    <div className="flex items-center gap-3 p-3 bg-white border border-wood/20 rounded-lg">
+                      <input
+                        type="radio"
+                        id="method-file"
+                        name="uploadMethod"
+                        checked={uploadMethod === "file"}
+                        onChange={() => setUploadMethod("file")}
+                        className="accent-burgundy"
+                      />
+                      <label htmlFor="method-file" className="font-cairo text-burgundy-dark font-bold text-sm cursor-pointer flex-1">
+                        رفع من الجهاز
+                      </label>
+                    </div>
+                    {uploadMethod === "file" && (
+                      <div>
+                        <input
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("الملف كبير جداً. الحد الأقصى 5 ميجابايت");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              setLectureForm({ ...lectureForm, pdfFile: ev.target?.result as string, pdfUrl: "" });
+                              setUploadMethod("file");
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg font-cairo text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-burgundy file:text-cream file:font-cairo file:text-sm file:cursor-pointer hover:file:bg-burgundy-light transition-all cursor-pointer"
+                        />
+                        {lectureForm.pdfFile && (
+                          <p className="text-green-700 text-xs font-cairo mt-1">✓ تم اختيار الملف</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {lectureMsg && (
+                  <p className={`font-cairo font-bold text-sm text-center ${lectureMsgType === "success" ? "text-green-700" : "text-red-600"}`}>
+                    {lectureMsg}
+                  </p>
+                )}
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -438,17 +594,44 @@ export default function AdminPage() {
                 <div key={t.id} className="scout-card rounded-xl p-4 sm:p-6">
                   {editingTali3a === t.id ? (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <ScoutLogo logoId={editForm.logoId} className="w-16 h-16" />
-                        <select
-                          value={editForm.logoId}
-                          onChange={(e) => setEditForm({ ...editForm, logoId: e.target.value })}
-                          className="px-3 py-2 bg-white border border-wood/20 rounded-lg font-cairo text-sm"
-                        >
-                          {getLogoOptions().map((opt) => (
-                            <option key={opt.id} value={opt.id}>{opt.name}</option>
-                          ))}
-                        </select>
+                      <div>
+                        <label className="block text-burgundy-dark font-cairo font-bold text-sm mb-2">
+                          صورة الطليعة
+                        </label>
+                        {editForm.imageUrl ? (
+                          <div className="relative h-32 rounded-lg overflow-hidden border border-wood/20 mb-3">
+                            <img src={editForm.imageUrl} alt="" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setEditForm({ ...editForm, imageUrl: "" })}
+                              className="absolute top-1 left-1 w-6 h-6 bg-red-600 text-cream rounded-full text-xs font-bold hover:bg-red-700 transition-all flex items-center justify-center"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="h-32 rounded-lg border-2 border-dashed border-wood/30 flex items-center justify-center mb-3">
+                            <span className="text-wood/50 font-cairo text-sm">لم يتم رفع صورة</span>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/gif"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 2 * 1024 * 1024) {
+                              alert("الصورة كبيرة جداً. الحد الأقصى 2 ميجابايت");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              setEditForm({ ...editForm, imageUrl: ev.target?.result as string });
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg font-cairo text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-burgundy file:text-cream file:font-cairo file:text-sm file:cursor-pointer hover:file:bg-burgundy-light transition-all cursor-pointer"
+                        />
                       </div>
                       <input
                         type="text"
@@ -464,19 +647,6 @@ export default function AdminPage() {
                         className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg font-cairo resize-none"
                         placeholder="الوصف"
                       />
-                      <input
-                        type="text"
-                        value={editForm.imageUrl}
-                        onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-wood/20 rounded-lg font-cairo text-sm"
-                        placeholder="رابط صورة الطليعة (اختياري)"
-                      />
-                      {editForm.imageUrl && (
-                        <div className="relative h-24 rounded-lg overflow-hidden border border-wood/20">
-                          <img src={editForm.imageUrl} alt="معاينة" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} />
-                          <span className="absolute bottom-1 right-1 text-[10px] bg-black/60 text-cream px-2 py-0.5 rounded">معاينة</span>
-                        </div>
-                      )}
                       <div className="flex gap-2">
                         <button onClick={saveEdit} className="px-6 py-2 bg-green-600 text-white rounded-lg font-cairo font-bold text-sm hover:bg-green-700 transition-all">
                           حفظ
@@ -489,11 +659,13 @@ export default function AdminPage() {
                   ) : (
                     <div className="flex items-center gap-4">
                       {t.imageUrl ? (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-wood/10">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 border-2 border-burgundy/20 shadow-md">
                           <img src={t.imageUrl} alt="" className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <ScoutLogo logoId={t.logoId} className="w-16 h-16 shrink-0" />
+                        <div className="w-20 h-20 rounded-xl shrink-0 border-2 border-dashed border-wood/30 flex items-center justify-center bg-wood/5">
+                          <span className="text-wood/30 font-cairo text-xs text-center px-1">لا توجد صورة</span>
+                        </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-bold font-reem text-burgundy-dark">{t.name}</h3>

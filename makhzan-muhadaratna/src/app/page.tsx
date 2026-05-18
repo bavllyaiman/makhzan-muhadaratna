@@ -7,14 +7,18 @@ import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import ScoutCard from "@/components/ScoutCard";
 import LoadingScreen from "@/components/LoadingScreen";
-import { loadTali3atList } from "@/lib/data";
+import { fetchTali3at } from "@/lib/data";
 import { Tali3a } from "@/lib/types";
 
 export default function HomePage() {
   const [tali3at, setTali3at] = useState<Tali3a[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTali3at(loadTali3atList());
+    fetchTali3at().then((list) => {
+      setTali3at(list);
+      setLoading(false);
+    });
   }, []);
   return (
     <>
