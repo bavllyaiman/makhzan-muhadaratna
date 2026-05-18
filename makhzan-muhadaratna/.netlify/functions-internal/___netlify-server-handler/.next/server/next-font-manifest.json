@@ -1,0 +1,52 @@
+{
+  "app": {
+    "[project]/src/app/_not-found/page": [
+      "static/media/9ff27b8a0a8f3dc0-s.p.170gfl_1xpie6.woff2",
+      "static/media/9c2f2b5a045fa930-s.p.03cay.8yy0ez..woff2",
+      "static/media/c9a0d344f313d307-s.p.10tdkt._dcy9o.woff2",
+      "static/media/280fac012b00b901-s.p.10sk5q~m.vz5z.woff2",
+      "static/media/ceec3e50f42c26e3-s.p.0435e-sm4z2ue.woff2",
+      "static/media/5ad8fdb5805e9b4a-s.p.0boyeo3yu06q3.woff2",
+      "static/media/458e5297e26af6a4-s.p.0_ti4hhp0muno.woff2"
+    ],
+    "[project]/src/app/admin/page": [
+      "static/media/9ff27b8a0a8f3dc0-s.p.170gfl_1xpie6.woff2",
+      "static/media/9c2f2b5a045fa930-s.p.03cay.8yy0ez..woff2",
+      "static/media/c9a0d344f313d307-s.p.10tdkt._dcy9o.woff2",
+      "static/media/280fac012b00b901-s.p.10sk5q~m.vz5z.woff2",
+      "static/media/ceec3e50f42c26e3-s.p.0435e-sm4z2ue.woff2",
+      "static/media/5ad8fdb5805e9b4a-s.p.0boyeo3yu06q3.woff2",
+      "static/media/458e5297e26af6a4-s.p.0_ti4hhp0muno.woff2"
+    ],
+    "[project]/src/app/muhadara/[id]/page": [
+      "static/media/9ff27b8a0a8f3dc0-s.p.170gfl_1xpie6.woff2",
+      "static/media/9c2f2b5a045fa930-s.p.03cay.8yy0ez..woff2",
+      "static/media/c9a0d344f313d307-s.p.10tdkt._dcy9o.woff2",
+      "static/media/280fac012b00b901-s.p.10sk5q~m.vz5z.woff2",
+      "static/media/ceec3e50f42c26e3-s.p.0435e-sm4z2ue.woff2",
+      "static/media/5ad8fdb5805e9b4a-s.p.0boyeo3yu06q3.woff2",
+      "static/media/458e5297e26af6a4-s.p.0_ti4hhp0muno.woff2"
+    ],
+    "[project]/src/app/page": [
+      "static/media/9ff27b8a0a8f3dc0-s.p.170gfl_1xpie6.woff2",
+      "static/media/9c2f2b5a045fa930-s.p.03cay.8yy0ez..woff2",
+      "static/media/c9a0d344f313d307-s.p.10tdkt._dcy9o.woff2",
+      "static/media/280fac012b00b901-s.p.10sk5q~m.vz5z.woff2",
+      "static/media/ceec3e50f42c26e3-s.p.0435e-sm4z2ue.woff2",
+      "static/media/5ad8fdb5805e9b4a-s.p.0boyeo3yu06q3.woff2",
+      "static/media/458e5297e26af6a4-s.p.0_ti4hhp0muno.woff2"
+    ],
+    "[project]/src/app/tali3a/[id]/page": [
+      "static/media/9ff27b8a0a8f3dc0-s.p.170gfl_1xpie6.woff2",
+      "static/media/9c2f2b5a045fa930-s.p.03cay.8yy0ez..woff2",
+      "static/media/c9a0d344f313d307-s.p.10tdkt._dcy9o.woff2",
+      "static/media/280fac012b00b901-s.p.10sk5q~m.vz5z.woff2",
+      "static/media/ceec3e50f42c26e3-s.p.0435e-sm4z2ue.woff2",
+      "static/media/5ad8fdb5805e9b4a-s.p.0boyeo3yu06q3.woff2",
+      "static/media/458e5297e26af6a4-s.p.0_ti4hhp0muno.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

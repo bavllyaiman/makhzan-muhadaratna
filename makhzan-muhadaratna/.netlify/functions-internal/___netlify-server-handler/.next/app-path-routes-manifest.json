@@ -1,0 +1,9 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/favicon.ico/route": "/favicon.ico",
+  "/muhadara/[id]/page": "/muhadara/[id]",
+  "/page": "/",
+  "/tali3a/[id]/page": "/tali3a/[id]"
+}
