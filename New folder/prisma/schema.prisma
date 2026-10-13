@@ -7,6 +7,13 @@
 
 generator client {
   provider = "prisma-client-js"
+
+  // `native` resolves to whatever machine runs `prisma generate`. Netlify
+  // functions execute on Amazon Linux 2023, which reports itself as
+  // `rhel-openssl-3.0.x`. Listing that target explicitly ships its query engine
+  // alongside the local one, so a build performed on Windows still produces a
+  // bundle that runs on Netlify's Linux functions.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
