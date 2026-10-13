@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# Netlify deployment configuration — Scout League
+#
+# Next.js is supported natively on Netlify through the OpenNext adapter
+# (shipped as the "Netlify Next.js Runtime"). The runtime is installed
+# AUTOMATICALLY when Netlify detects a Next.js project, so there is deliberately
+# NO `[[plugins]]` block here — adding one would pin the adapter version and
+# opt you out of upstream fixes.
+#
+#   Docs: https://docs.netlify.com/integrations/frameworks/next-js/overview
+# ---------------------------------------------------------------------------
+
+[build]
+  command = "npm run build"
+  # `publish` is intentionally omitted. The Next.js runtime sets it itself
+  # (it is `.next` plus the generated function bundles); setting it by hand is
+  # the most common cause of a blank deploy.
+
+[build.environment]
+  # Netlify defaults to an older Node. The native Argon2 module and Prisma 6
+  # both need Node 20+; 22 is the current LTS and matches the Dockerfile.
+  NODE_VERSION = "22"
+
+  NEXT_TELEMETRY_DISABLED = "1"
+
+  # Debian-based build image. This matters for @node-rs/argon2: it selects the
+  # linux-x64-gnu prebuild, which is what Netlify Functions (Amazon Linux)
+  # can load at runtime. A musl/alpine builder would produce a binary the
+  # function runtime cannot execute.
+  NPM_FLAGS = "--no-audit --no-fund"
+
+# ---------------------------------------------------------------------------
+# No [[redirects]] and no public/_redirects file.
+#
+# A catch-all rule such as `/*  /index.html  200` is the SPA idiom used for
+# client-side routers (Create React App, Vite, Vue). This app uses the Next.js
+# App Router, which routes on the SERVER, and Netlify's own documentation warns
+# that a root-level rewrite "would take precedence over Next.js Runtime's
+# generated rewrites and break routing on your site".
+#
+# Applied here it would rewrite every request — including /api/auth/login and
+# every server component — to index.html, and the login endpoint would stop
+# existing. Routing is handled entirely by Next.js.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Security response headers
+#
+# These are already produced by `next.config.mjs` (which also attaches a
+# per-request CSP nonce from middleware), so they are NOT duplicated here.
+# Declaring the same header in both places causes Netlify to emit the value
+# twice, and two Content-Security-Policy headers are combined with a comma —
+# which invalidates the policy.
+# ---------------------------------------------------------------------------

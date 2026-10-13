@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-beige-100 text-ink font-sans antialiased;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(69, 140, 102, 0.10), transparent 42%),
+      radial-gradient(circle at 88% 0%, rgba(124, 122, 78, 0.10), transparent 38%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+  }
+
+  /* Visible, high-contrast focus ring — never remove without replacement. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-forest-500 ring-offset-2 ring-offset-beige-100;
+  }
+
+  ::selection {
+    @apply bg-forest-200 text-forest-900;
+  }
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-2xl border border-beige-300/70 bg-white/80 shadow-card backdrop-blur-sm;
+  }
+
+  .surface-card-hover {
+    @apply surface-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift hover:border-forest-300;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           transition-all duration-200 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-forest-600 text-white shadow-sm hover:bg-forest-700 hover:shadow-md;
+  }
+
+  .btn-ghost {
+    @apply btn border border-beige-300 bg-white/60 text-forest-800 hover:bg-beige-100;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Respects both the OS setting and the in-app "reduce motion" toggle. */
+  .motion-reduce-fallback,
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Text helpers */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
